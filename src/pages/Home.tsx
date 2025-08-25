@@ -18,7 +18,7 @@ export const Home = (): FunctionComponent => {
 		<div className="min-h-screen bg-m3-surface">
 			{/* Navigation Header */}
 			<header className="bg-m3-surfaceContainer border-b border-m3-outline" role="banner">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl">
 					<div className="flex justify-between items-center py-4">
 						<div className="flex items-center space-x-8">
 							<h1 className="text-xl font-bold text-m3-onSurface">Vite React Boilerplate</h1>
@@ -91,15 +91,15 @@ export const Home = (): FunctionComponent => {
 			</header>
 
 			{/* Main Content */}
-			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+			<main className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl py-12">
 				<div className="text-center">
 					<h2 className="text-4xl font-bold text-m3-onSurface mb-4">{t("home.greeting")}</h2>
 					<p className="text-xl text-m3-onSurface mb-8">
 						A production-ready React boilerplate with Material 3 design system
 					</p>
 
-					{/* Feature Cards */}
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+					{/* Feature Cards - Progressive columns for all screen sizes */}
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 hd:grid-cols-6 fhd:grid-cols-7 qhd:grid-cols-8 gap-6 mt-12">
 						<Link
 							to="/analytics"
 							className="group bg-m3-surfaceContainer border border-m3-outline rounded-lg p-6 hover:bg-m3-surfaceContainerHigh transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-m3-primary focus:ring-offset-2"
