@@ -79,7 +79,6 @@ Thumbs.db
 e2e-artifacts/
 
 # non-project files like PRD documents, sample data, and examples intended for ai usage
-/docs/
 
 # Applications
 *.app

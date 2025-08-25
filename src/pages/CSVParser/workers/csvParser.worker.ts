@@ -300,13 +300,14 @@ function handleComplete(results: Papa.ParseResult<string[]>): void {
     // Final progress update
     postProgressMessage();
 
-    // Send completion message
+    // Send completion message with actual data
     const completeMessage: ParseCompleteMessage = {
       type: 'PARSE_COMPLETE',
       sheetId,
       totalRows: currentParseOperation.rowsProcessed,
       headers: currentParseOperation.headers,
       warnings: currentParseOperation.warnings,
+      data: dataRows, // Include the actual parsed data rows
       detectedOptions: {
         ...currentParseOperation.detectedOptions,
         headerRowIndex: currentParseOperation.options.headerRowIndex,

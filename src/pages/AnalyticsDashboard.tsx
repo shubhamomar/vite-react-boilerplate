@@ -136,7 +136,7 @@ const TabContent: React.FC<{ data: TabData; searchTerm: string }> = ({ data, sea
           </h3>
           <div className="text-sm text-m3-onSurface/60">Real-time data</div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 hd:grid-cols-6 fhd:grid-cols-7 qhd:grid-cols-8 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {data.charts.map((chart, index) => {
             const isPositive = chart.change > 0;
             const gradientColors = [
@@ -338,7 +338,7 @@ export const AnalyticsDashboard: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         {/* Enhanced Header with Gradient */}
         <header className="bg-gradient-to-r from-white to-blue-50 border-b border-gray-200 shadow-sm" role="banner">
-          <div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
@@ -361,7 +361,7 @@ export const AnalyticsDashboard: React.FC = () => {
 
       {/* Enhanced Navigation Tabs */}
       <nav className="bg-white border-b border-gray-200 shadow-sm" role="tablist" aria-label="Analytics sections">
-        <div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mobile dropdown for smaller screens */}
           <div className="sm:hidden">
             <select
@@ -409,7 +409,7 @@ export const AnalyticsDashboard: React.FC = () => {
       </nav>
 
       {/* Filters Sidebar and Main Content */}
-      <div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="lg:grid lg:grid-cols-4 lg:gap-6">
           {/* Enhanced Filters Sidebar */}
           <aside className="lg:col-span-1 mb-6 lg:mb-0" role="complementary" aria-label="Filters">

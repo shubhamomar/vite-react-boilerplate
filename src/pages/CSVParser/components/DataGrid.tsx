@@ -18,6 +18,7 @@ const DataGrid: React.FC = () => {
     sheets,
     patches,
     viewStates,
+    sheetData,
     updateCell,
     updateViewState,
     isPerformanceMode,
@@ -26,6 +27,7 @@ const DataGrid: React.FC = () => {
   const activeSheet = activeSheetId ? sheets.get(activeSheetId) : null;
   const sheetPatches = activeSheetId ? patches.get(activeSheetId) : null;
   const viewState = activeSheetId ? viewStates.get(activeSheetId) : null;
+  const csvData = activeSheetId ? sheetData.get(activeSheetId) : null;
 
   // Generate column definitions
   const columnDefs = useMemo((): ColDef[] => {
@@ -75,27 +77,40 @@ const DataGrid: React.FC = () => {
     }));
   }, [activeSheet, sheetPatches]);
 
-  // Mock row data (in real implementation, this would come from your data adapter)
+  // Convert CSV data to AG Grid format
   const rowData = useMemo(() => {
-    if (!activeSheet) return [];
+    if (!activeSheet || !csvData) return [];
 
-    // Generate mock data for demonstration
-    const mockData = [];
-    for (let i = 0; i < Math.min(1000, activeSheet.stats.rows); i++) {
+    console.log('Converting CSV data to AG Grid format:', {
+      totalRows: csvData.length,
+      totalCols: csvData[0]?.length || 0,
+      headers: activeSheet.headers,
+      sampleRow: csvData[0],
+    });
+
+    // Convert CSV rows to AG Grid row objects
+    const gridData = csvData.map((csvRow, rowIndex) => {
       const row: any = {};
       activeSheet.headers.forEach((_, colIndex) => {
-        const patchedValue = sheetPatches?.get(i)?.get(colIndex);
+        // Check for patched value first
+        const patchedValue = sheetPatches?.get(rowIndex)?.get(colIndex);
         if (patchedValue !== undefined) {
           row[`col_${colIndex}`] = patchedValue;
         } else {
-          // Mock data based on column index
-          row[`col_${colIndex}`] = `Row ${i + 1}, Col ${colIndex + 1}`;
+          // Use the actual CSV data
+          row[`col_${colIndex}`] = csvRow[colIndex] || '';
         }
       });
-      mockData.push(row);
-    }
-    return mockData;
-  }, [activeSheet, sheetPatches]);
+      return row;
+    });
+
+    console.log('Generated AG Grid data:', {
+      totalRows: gridData.length,
+      sampleGridRow: gridData[0],
+    });
+
+    return gridData;
+  }, [activeSheet, csvData, sheetPatches]);
 
   // Grid options
   const defaultColDef = useMemo((): ColDef => ({

@@ -99,6 +99,7 @@ const CSVParserDashboard: React.FC = () => {
                 totalRows: (message as any).totalRows,
                 warnings: (message as any).warnings,
                 detectedOptions: (message as any).detectedOptions,
+                data: (message as any).data, // Include the parsed data
               });
               break;
 
@@ -149,7 +150,7 @@ const CSVParserDashboard: React.FC = () => {
         }}
       >
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10 w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl py-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h1 className="text-4xl font-bold text-white mb-2">
@@ -181,14 +182,14 @@ const CSVParserDashboard: React.FC = () => {
       {/* Sheet Tabs */}
       {hasSheets && (
         <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SheetTabs />
           </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="w-full px-fluid-sm md:px-fluid-md lg:px-fluid-lg xl:px-fluid-xl py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {!hasSheets ? (
           // Empty State - File Upload
           <div className="flex items-center justify-center min-h-[600px]">

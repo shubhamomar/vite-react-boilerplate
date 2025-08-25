@@ -1,30 +1,426 @@
 ---
-name: design-workflow
-version: 1.0
-description: "Guides the AI agent through the implementation of a single, approved development phase."
+description: Comprehensive design workflow with fluid layouts, modern minimal aesthetics, and MCP tool integration
+globs:
+  - "src/**/*.{ts,tsx,js,jsx,css,scss}"
+  - "designs/**/*.{json,md}"
+alwaysApply: true
 ---
 
-# AI Agent Design & Implementation Workflow
+# Design Workflow & Standards
 
-## 0) Mandate
+## 🎯 MANDATORY DESIGN PROCESS
 
-This rule is activated by the `main-orchestrator.mdc` after a plan has been approved by the user. Its sole purpose is to guide the agent through the **implementation** of one phase of the development plan.
+### Phase 1: Discovery & Planning (REQUIRED)
+Before implementing ANY design request or PRD:
 
-## 1) Core Principles
+1. **Research Phase**
+   ```
+   - Use mcp_shadcn_getComponents to explore available UI components
+   - Use mcp_context7_resolve-library-id for implementation research
+   - Use mcp_context7_get-library-docs for detailed documentation
+   - Analyze requirements against tokens.json capabilities
+   - Review designs/coding-guidelines.md for relevant patterns
+   ```
 
-- **Adhere to the Plan**: Only implement what is specified for the current phase in `plan-{task-name}.md`.
-- **Tokens are Law**: All visual styles (colors, spacing, radii, etc.) **must** be derived from `designs/tokens.json`. No hardcoded values are permitted.
-- **Guidelines are Gospel**: All code structure, component patterns, and accessibility considerations **must** follow `designs/coding-guidelines.md`.
+2. **Plan Creation (USER APPROVAL REQUIRED)**
+   ```
+   - CREATE PLAN DOCUMENT: planned-tasks/plan-{task-name}.md using provided template
+   - Create detailed implementation plan with component breakdown
+   - Identify required design tokens from designs/tokens.json
+   - Plan fluid layout strategy with breakpoint behavior (CRITICAL: full-width requirements)
+   - Define accessibility and performance targets
+   - CRITICAL: Include testing strategy with Playwright MCP
+   - Plan third-party library integration (module registration, configuration)
+   - Present comprehensive plan to user BEFORE proceeding
+   - MANDATORY: Obtain explicit user approval before any implementation
+   - Document approval status in plan file
+   ```
 
-## 2) Implementation Steps
+3. **Implementation Strategy**
+   ```
+   - Outline MCP tool usage sequence
+   - Define testing approach with Playwright automation
+   - Set validation criteria for completion
+   - Plan console monitoring and error prevention
+   - Define file upload and user interaction testing scenarios
+   ```
 
-1.  **Announce Phase**: State which phase from the plan you are beginning to implement.
-2.  **Code Generation**:
-    - Write or modify the code as required.
-    - Continuously reference the three sources of truth:
-        1.  The approved plan (`/planned-tasks/plan-{task-name}.md`)
-        2.  The design tokens (`/designs/tokens.json`)
-        3.  The coding guidelines (`/designs/coding-guidelines.md`)
-3.  **Self-Correction**:
-    - After generating code, perform a quick self-review. Did you accidentally hardcode a color? Does the component use container queries as required? Fix any obvious deviations before proceeding.
-4.  **Completion**: Once the implementation for the phase is complete, return control to the `main-orchestrator.mdc`, which will then trigger the `design-reviewer.mdc` for testing.
+4. **Error Prevention Planning**
+   ```
+   - Review coding-guidelines.md for relevant third-party library patterns
+   - Plan module registration strategy for libraries (e.g., AG Grid)
+   - Define worker configuration approach if needed
+   - Plan theming strategy to avoid conflicts
+   - Include real browser testing in development workflow
+   ```
+
+## 🚨 NON-NEGOTIABLE DESIGN RULES
+
+### Fluid-First Layouts (CRITICAL for High-Resolution Displays)
+- **ALWAYS use fluid units**: `rem`, `em`, `vw`, `vh`, `clamp()`, `minmax()`, `fr`
+- **NEVER use fixed px** except for: borders, shadows, icons, and fine details
+- **NEVER use max-width constraints** that limit layout width (e.g., max-w-6xl, max-width: 1200px)
+- **Container strategy**: 100% width with NO arbitrary max-width constraints
+- **Full-width requirement**: Layouts MUST utilize entire viewport width on all displays
+- **Progressive enhancement**: More columns/content on wider screens (2K: 5-6 cols, 4K: 8+ cols)
+- **Responsive scaling**: Use `clamp()` for typography and spacing that scales smoothly
+- **Grid systems**: CSS Grid with `minmax()` and `fr` units for adaptive columns
+- **REFLOW REQUIREMENT**: Zero horizontal scroll at 320px viewport width
+- **HIGH-RES VALIDATION**: Test on 2560px+ to ensure no wasted horizontal space
+
+### Modern Minimal Boundaries
+- **NO VISIBLE BORDERS**: Replace all `border` declarations with shadow and tone variations
+- **Shadow usage**: Use tokens.json > modernDesign.boundaries.shadows
+- **Tone separation**: Use surface container variants for visual hierarchy:
+  - `surfaceContainer` for cards against surface background
+  - `surfaceContainerLow` for subtle section separation
+  - `surfaceContainerHigh` for interactive element emphasis
+  - `surfaceContainerHighest` for floating/elevated content
+
+### Design Token Authority
+- **EXCLUSIVE REFERENCE**: `designs/tokens.json`
+- **Material 3 roles**: MUST use `primary/onPrimary`, `surface/onSurface`, `outline`, `surfaceContainer*`
+- **No raw hex colors**: All colors through M3 role system
+- **Typography**: Use M3 type roles (`display/headline/title/body/label`)
+- **Spacing**: Use design system spacing scale exclusively
+
+## 🛠️ MCP TOOL INTEGRATION PROTOCOL
+
+### For Component Development
+```bash
+# 1. Explore available components
+mcp_shadcn_getComponents
+
+# 2. Get specific component details
+mcp_shadcn_getComponent [component-name]
+
+# 3. Research implementation patterns
+mcp_context7_resolve-library-id [library-name]
+mcp_context7_get-library-docs [context7-library-id]
+```
+
+### For Design Validation
+```bash
+# 1. Visual testing across breakpoints
+mcp_playwright_browser_resize + mcp_playwright_browser_take_screenshot
+
+# 2. Accessibility validation
+mcp_playwright_browser_evaluate [accessibility-checks]
+
+# 3. Interaction testing
+mcp_playwright_browser_click + mcp_playwright_browser_hover + mcp_playwright_browser_type
+```
+
+## 📏 RESPONSIVE DESIGN REQUIREMENTS
+
+### Critical Breakpoints (Updated for High-Resolution Displays)
+Test and optimize for: `320px, 375px, 768px, 1024px, 1440px, 1600px, 1920px, 2560px, 3840px`
+
+### Layout Behavior Standards
+- **320px**: Single column, stacked content, touch-optimized (44px targets)
+- **768px**: Hybrid layouts, progressive enhancement (2-3 columns)
+- **1024px**: Full desktop patterns, sidebar + main content (3-4 columns)
+- **1440px**: Optimized spacing, increased content density (4-5 columns)
+- **1600px (HD)**: Enhanced layout with more columns (5-6 columns)
+- **1920px (FHD)**: Full HD optimization (6-7 columns)
+- **2560px (QHD/2K)**: CRITICAL - Must utilize full width (7-8 columns)
+- **3840px (UHD/4K)**: Maximum enhancement (8+ columns)
+
+### High-Resolution Display Requirements (Added: 2025-01-21)
+- **Full-width utilization**: No wasted horizontal space on any display
+- **Progressive column enhancement**: More content columns on wider screens
+- **Adaptive padding**: Proportional spacing that scales with screen width
+- **Content density**: Optimize information density for available space
+- **No arbitrary constraints**: Remove all fixed max-width limitations
+
+### Accessibility Checkpoints
+- **Touch targets**: ≥44px mobile, ≥24px desktop
+- **Focus indicators**: ≥3:1 contrast change, visible outline
+- **Color contrast**: Text AA (4.5:1), UI elements (3:1)
+- **Keyboard navigation**: Complete traversal, logical tab order
+- **Screen reader**: Proper landmarks, ARIA labels, semantic HTML
+
+## 🎨 VISUAL ENHANCEMENT GUIDELINES
+
+### Mesh Gradients (tokens.json > meshGradients)
+- **Hero sections**: Use `primary.hero` or `complex.aurora`
+- **Cards**: Apply `primary.card` or `primary.subtle` for depth
+- **Status indicators**: Use `secondary.success|warning|error|info`
+- **Complex backgrounds**: Choose from `complex` collection for visual interest
+
+### Shadow Strategy
+- **Subtle**: Component boundaries, form fields
+- **Soft**: Interactive elements, hover states
+- **Medium**: Cards, modals, elevated content
+- **Strong**: Popovers, tooltips, floating elements
+
+## 🔄 QUALITY ASSURANCE PROCESS
+
+### Pre-Implementation Checklist
+- [ ] Plan created and user-approved
+- [ ] MCP tools researched for best practices
+- [ ] tokens.json tokens identified
+- [ ] Fluid layout strategy defined
+- [ ] Accessibility requirements planned
+
+### Implementation Standards
+- [ ] Zero fixed px units (except allowed exceptions)
+- [ ] No visible borders (shadow/tone variations only)
+- [ ] All colors via M3 role system
+- [ ] Responsive behavior 320px-2560px+
+- [ ] Touch target minimums met
+- [ ] Third-party libraries properly configured (see coding-guidelines.md)
+- [ ] Console errors eliminated before proceeding
+
+### Post-Implementation Validation
+- [ ] Playwright responsive testing completed
+- [ ] Real browser interaction testing (file uploads, clicks, forms)
+- [ ] Console monitoring shows zero errors/warnings
+- [ ] Accessibility audit passed (WCAG 2.2 AA)
+- [ ] Design token compliance verified
+- [ ] Performance targets met
+- [ ] Cross-browser compatibility confirmed
+- [ ] File upload flows tested with real data
+- [ ] Third-party library integration validated
+
+### Post-Implementation Documentation (REQUIRED)
+- [ ] **CREATE CHANGELOG**: ai-tasks/{task-name}/changelog.md with complete summary
+- [ ] **CAPTURE SCREENSHOTS**: Before/after comparison across all breakpoints
+- [ ] **DOCUMENT LEARNINGS**: Update designs/coding-guidelines.md with new patterns
+- [ ] **UPDATE GUIDELINES**: Enhance workflow rules based on implementation experience
+- [ ] **PERFORMANCE METRICS**: Document improvements and validation results
+- [ ] **FUTURE REFERENCE**: Ensure all decisions and solutions are documented for team knowledge
+
+## 🚀 EXAMPLE IMPLEMENTATION WORKFLOW
+
+### 1. User Request
+"Create a dashboard with data cards and filtering"
+
+### 2. Discovery (MCP Tools)
+```bash
+mcp_shadcn_getComponents  # Find card, filter, layout components
+mcp_context7_resolve-library-id "dashboard"  # Research dashboard patterns
+mcp_context7_get-library-docs [library-id]  # Get implementation guidance
+```
+
+### 3. Plan Presentation
+```markdown
+**Implementation Plan:**
+- Components: Card, Select, Input, Table from shadcn/ui
+- Layout: CSS Grid with minmax() for responsive cards
+- Design tokens: surfaceContainer cards, primary accents
+- Breakpoints: 1-2-3-4 column grid progression
+- Accessibility: Keyboard navigation, ARIA labels, screen reader support
+- Testing: Playwright across all breakpoints + WCAG validation
+
+**Approve to proceed? [Y/N]**
+```
+
+### 4. Implementation (After Approval)
+```typescript
+// ✅ Good: Full-width fluid layout with progressive enhancement
+<div className="min-h-screen w-full bg-m3-surface">
+  <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 hd:px-20 fhd:px-24 qhd:px-32">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 hd:grid-cols-6 fhd:grid-cols-7 qhd:grid-cols-8 gap-6">
+      <Card className="bg-m3-surfaceContainer shadow-soft border-0">
+        // Content with M3 role colors
+      </Card>
+    </div>
+  </div>
+</div>
+
+// ❌ Bad: Constrained layout that wastes space on large displays
+<div className="max-w-6xl mx-auto"> {/* Limits to 1152px */}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    // Wasted space on 2K+ displays
+  </div>
+</div>
+```
+
+### 5. Validation (Enhanced for High-Resolution Displays)
+```bash
+mcp_playwright_browser_navigate [url]
+
+# Test all critical breakpoints including high-resolution displays
+for width in 320 768 1024 1440 1600 1920 2560 3840; do
+  mcp_playwright_browser_resize $width 900
+  mcp_playwright_browser_take_screenshot --filename="layout-${width}px.png"
+
+  # Validate full-width utilization on large displays
+  if [ $width -ge 1600 ]; then
+    mcp_playwright_browser_evaluate "
+      // Verify no max-width constraints
+      const main = document.querySelector('main') || document.body;
+      const computedWidth = getComputedStyle(main).width;
+      const maxWidth = getComputedStyle(main).maxWidth;
+
+      console.log('Screen width: ${width}px');
+      console.log('Container width:', computedWidth);
+      console.log('Max width constraint:', maxWidth);
+
+      // Should not be constrained by arbitrary max-width
+      const isConstrained = maxWidth !== 'none' && parseInt(maxWidth) < ${width};
+      if (isConstrained) {
+        console.error('Layout constrained by max-width on high-res display');
+      }
+
+      return { width: computedWidth, maxWidth, isConstrained };
+    "
+  fi
+done
+
+# Verify reflow at minimum width
+mcp_playwright_browser_resize 320 900
+mcp_playwright_browser_evaluate [reflow-checks]
+
+# Test accessibility across all breakpoints
+mcp_playwright_browser_evaluate [accessibility-checks]
+```
+
+## 🧪 CRITICAL TESTING PROTOCOLS
+
+### Console Monitoring (MANDATORY)
+```bash
+# Before declaring implementation complete
+mcp_playwright_browser_console_messages
+# Must show zero errors and minimal warnings
+
+# File upload testing with real data
+mcp_playwright_browser_click [upload-button]
+mcp_playwright_browser_file_upload [real-file-path]
+mcp_playwright_browser_console_messages  # Check post-upload errors
+```
+
+### Third-Party Library Validation
+```typescript
+// AG Grid Integration Checklist
+- [ ] AllCommunityModule registered (not individual modules)
+- [ ] Theming strategy chosen (legacy vs new API)
+- [ ] Deprecated API patterns avoided (v32.2+ compliance)
+- [ ] Console shows no module registration errors
+
+// Papa Parse + Workers
+- [ ] Worker configuration prevents nesting (worker: false)
+- [ ] Error handlers implemented
+- [ ] Progress logging added for debugging
+- [ ] File processing tested with large datasets
+
+// General Library Integration
+- [ ] Module registration completed before usage
+- [ ] Version compatibility verified
+- [ ] Community vs Enterprise features identified
+- [ ] Configuration documented in coding-guidelines.md
+```
+
+### Real Data Testing Requirements
+```bash
+# File Upload Scenarios
+- [ ] Small files (< 1MB)
+- [ ] Large files (> 100MB)
+- [ ] Invalid file types
+- [ ] Corrupted files
+- [ ] Empty files
+
+# Browser Interaction Testing
+- [ ] Click interactions work
+- [ ] Form submissions succeed
+- [ ] File drag & drop functional
+- [ ] Keyboard navigation complete
+- [ ] Touch interactions responsive
+```
+
+## 📖 REFERENCE PRIORITY
+
+1. `designs/tokens.json` (authoritative design tokens)
+2. `designs/coding-guidelines.md` (comprehensive development patterns)
+3. `planned-tasks/` folder system (planning documentation and approval workflow)
+4. `designs/design-principles.md` (implementation guidance)
+5. `designs/design-review-agent.md` (validation framework)
+6. shadcn/ui component library (via MCP tools)
+7. Context7 documentation (via MCP tools)
+
+## 📋 PLANNING DOCUMENTATION SYSTEM
+
+### Planning Workflow Integration
+- **PRE-IMPLEMENTATION**: Create `planned-tasks/plan-{task-name}.md` for user approval
+- **DURING IMPLEMENTATION**: Follow approved plan precisely, document any deviations
+- **POST-IMPLEMENTATION**: Create `ai-tasks/{task-name}/changelog.md` with results
+- **SCREENSHOT DOCUMENTATION**: Capture before/after/breakpoint validation images
+- **KNOWLEDGE TRANSFER**: Update guidelines with learnings for future reference
+
+### Benefits
+- **User Transparency**: Clear planning and approval process
+- **Quality Assurance**: Comprehensive documentation of changes
+- **Team Knowledge**: Searchable history of design decisions and solutions
+- **Clean Git History**: Implementation commits without planning artifacts (/.gitignore)
+
+## ⚠️ COMMON PITFALLS TO AVOID
+
+### Design System Issues
+- Implementing without user-approved plan
+- Fixed pixel layouts that break on different screens
+- Visible borders instead of shadow/tone variations
+- Raw hex colors instead of M3 role system
+- Skipping MCP tool research phase
+- Insufficient responsive testing
+- Accessibility as afterthought instead of design requirement
+
+### Layout Constraint Issues (Added: 2025-01-21)
+- **Fixed max-width containers**: Using `max-w-6xl`, `max-width: 1200px`, etc.
+- **Centering with constraints**: `mx-auto` with fixed max-width on large screens
+- **Ignoring high-resolution displays**: Not testing on 2K/4K monitors
+- **Static column counts**: Not adding more columns on wider screens
+- **Fixed padding**: Not scaling padding proportionally with screen width
+- **Container over-constraint**: Arbitrarily limiting content width
+- **Missing progressive enhancement**: Same layout on all screen sizes above desktop
+
+### Third-Party Library Issues (Learned: 2025-01-21)
+- **AG Grid**: Using individual modules instead of `AllCommunityModule`
+- **AG Grid**: Mixing theming systems (CSS + new API without "legacy")
+- **AG Grid**: Using deprecated v32.2 APIs (`rowSelection="multiple"`)
+- **AG Grid**: Trying to use Enterprise features in Community edition
+- **Papa Parse**: Nesting workers (setting `worker: true` in worker context)
+- **Papa Parse**: Missing error handlers leading to silent failures
+- **Workers**: Not configuring proper message handling
+- **Console**: Not monitoring for errors during real browser testing
+
+### Testing & Validation Issues
+- Skipping console monitoring during development
+- Not testing with real file uploads and data
+- Testing only with synthetic/mock data
+- Missing browser interaction testing (clicks, forms, navigation)
+- Not validating responsive behavior at 320px
+- Deploying without clean console logs
+- Not testing third-party library integration thoroughly
+
+---
+
+**Remember**: This workflow ensures consistent, accessible, fluid designs that leverage the full power of our design system and available tooling. Every step serves the goal of creating exceptional user experiences across all devices and contexts.
+
+## 🔄 CONTINUOUS EVOLUTION
+
+This workflow is a **living system** that evolves with every challenge:
+
+### After Every Error Resolution:
+1. **Document the issue** in `designs/coding-guidelines.md`
+2. **Update prevention strategies** in this workflow
+3. **Enhance testing protocols** in design-review-agent
+4. **Share learnings** for team-wide benefit
+
+### Latest Updates (2025-01-21):
+- **CRITICAL**: Added full-width layout requirements for high-resolution displays
+- **NEW**: Implemented comprehensive planning documentation system (planned-tasks/ folder)
+- Enhanced responsive design for 2K/4K monitors (2560px, 3840px breakpoints)
+- Eliminated arbitrary max-width constraints that waste screen space
+- Added progressive grid enhancement (more columns on wider screens)
+- Implemented fluid padding system with viewport-relative scaling
+- **PROCESS**: Mandatory user approval workflow with plan-{task-name}.md documentation
+- **DOCUMENTATION**: Post-implementation changelog system with screenshot capture
+- Added comprehensive console monitoring requirements
+- Enhanced third-party library integration protocols
+- Implemented real browser interaction testing mandates
+- Created comprehensive coding guidelines documentation
+
+**Next Evolution**: [Date] - [New learnings from next challenge]
+
+*Every error makes us stronger, every solution makes us faster.*

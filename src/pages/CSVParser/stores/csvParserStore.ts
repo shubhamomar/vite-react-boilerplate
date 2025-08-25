@@ -69,6 +69,7 @@ const initialState: CSVParserState = {
   patches: new Map(),
   undoRedo: new Map(),
   viewStates: new Map(),
+  sheetData: new Map(),
   globalSearch: '',
   isPerformanceMode: false,
   memoryEstimate: {
@@ -151,6 +152,7 @@ export const useCSVParserStore = create<CSVParserStore>()(
               patches: new Map(state.patches.set(sheetId, new Map())),
               undoRedo: new Map(state.undoRedo.set(sheetId, createInitialUndoRedoState())),
               viewStates: new Map(state.viewStates.set(sheetId, createInitialViewState())),
+              sheetData: new Map(state.sheetData.set(sheetId, [])),
             };
           });
 
@@ -171,6 +173,9 @@ export const useCSVParserStore = create<CSVParserStore>()(
             const newViewStates = new Map(state.viewStates);
             newViewStates.delete(sheetId);
 
+            const newSheetData = new Map(state.sheetData);
+            newSheetData.delete(sheetId);
+
             // If removing active sheet, select another or null
             let newActiveSheetId = state.activeSheetId;
             if (state.activeSheetId === sheetId) {
@@ -184,6 +189,7 @@ export const useCSVParserStore = create<CSVParserStore>()(
               patches: newPatches,
               undoRedo: newUndoRedo,
               viewStates: newViewStates,
+              sheetData: newSheetData,
               activeSheetId: newActiveSheetId,
             };
           });
@@ -465,6 +471,7 @@ export const useCSVParserStore = create<CSVParserStore>()(
             patches: new Map(),
             undoRedo: new Map(),
             viewStates: new Map(),
+            sheetData: new Map(),
             activeSheetId: null,
           }));
         },
@@ -513,6 +520,17 @@ export const useCSVParserStore = create<CSVParserStore>()(
         },
 
         handleParseComplete: (sheetId: SheetId, result: any) => {
+          // Store the actual CSV data
+          set(state => {
+            const newSheetData = new Map(state.sheetData);
+            newSheetData.set(sheetId, result.data || []);
+            return {
+              ...state,
+              sheetData: newSheetData,
+            };
+          });
+
+          // Update sheet metadata
           get().updateSheetMeta(sheetId, {
             isLoading: false,
             parseProgress: 100,

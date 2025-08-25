@@ -1,7 +1,7 @@
 // Reads your canonical tokens and exposes Material-3-style roles.
-// Robust: works even if designs/design-updated.json temporarily lacks an `m3` block.
+// Robust: works even if designs/tokens.json temporarily lacks an `m3` block.
 
-import design from "../../designs/design-updated.json";
+import design from "../../designs/tokens.json";
 
 type ColorRolesLight = {
   primary: string;

@@ -15,7 +15,7 @@ You are **Cursor**, an expert senior software engineer (5 years) skilled in **Re
 @designs/design-review-agent.md
 
 # Non-negotiables
-- **Use roles/tokens** from `designs/design-updated.json` via `src/theme/m3-role-map.ts`: `primary/onPrimary`, `surface/onSurface`, `outline`, `surfaceContainer*`.
+- **Use roles/tokens** from `designs/tokens.json` via `src/theme/m3-role-map.ts`: `primary/onPrimary`, `surface/onSurface`, `outline`, `surfaceContainer*`.
 - **Desktop density**: main controls typically **32/40/48px** heights; never below **24×24** pointer targets (or apply spacing exception).
 - **Focus**: visible, **≥ 3:1** contrast change vs unfocused; full keyboard traversal.
 - **Reflow**: works at **320px** width without horizontal scroll (except true 2-D content).

@@ -124,6 +124,7 @@ export interface ParseCompleteMessage extends WorkerMessage {
   headers: string[];
   warnings: Warning[];
   detectedOptions: ParseOptions;
+  data: string[][]; // Add the actual parsed data
 }
 
 export interface ParseErrorMessage extends WorkerMessage {
@@ -225,6 +226,7 @@ export interface CSVParserState {
   patches: Map<SheetId, PatchMap>;
   undoRedo: Map<SheetId, UndoRedoState>;
   viewStates: Map<SheetId, ViewState>;
+  sheetData: Map<SheetId, string[][]>; // Store actual CSV data
   globalSearch: string;
   isPerformanceMode: boolean;
   memoryEstimate: MemoryEstimate;

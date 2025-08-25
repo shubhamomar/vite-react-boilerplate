@@ -21,7 +21,7 @@
 ### **MCP Tool Findings**
 - **shadcn Components**: {Components researched and selected}
 - **Context7 Documentation**: {External library research}
-- **Design System**: {design-updated.json tokens identified}
+- **Design System**: {tokens.json tokens identified}
 
 ### **Current State Analysis**
 {What exists now and what needs to change}
@@ -37,7 +37,7 @@
 3. **{Component N}**: {Description and approach}
 
 ### **Design Token Usage**
-- **Colors**: {M3 role mappings from design-updated.json}
+- **Colors**: {M3 role mappings from tokens.json}
 - **Typography**: {Type roles and hierarchy}
 - **Spacing**: {Fluid units and responsive scaling}
 - **Elevation**: {Shadow and surface container strategy}
@@ -96,7 +96,7 @@
 ### **Guidelines to Update**
 - [ ] designs/coding-guidelines.md
 - [ ] .cursor/rules/design-workflow.mdc
-- [ ] designs/design-review-agent-updated.md
+- [ ] designs/design-review-agent.md
 
 ### **New Patterns to Document**
 {Any new patterns this creates}

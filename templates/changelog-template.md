@@ -22,7 +22,7 @@
 ```
 {List of files changed with brief description}
 src/pages/Home.tsx               - Fixed max-width constraints
-designs/design-updated.json      - Updated layout philosophy
+designs/tokens.json      - Updated layout philosophy
 .cursor/rules/design-workflow.mdc - Added full-width requirements
 tailwind.config.js               - Added fluid spacing utilities
 ```
@@ -40,7 +40,7 @@ tailwind.config.js               - Added fluid spacing utilities
 
 #### **Configuration Changes**
 - **Tailwind Config**: {New utilities or breakpoints}
-- **Design Tokens**: {Updates to design-updated.json}
+- **Design Tokens**: {Updates to tokens.json}
 
 ## 📊 **Before vs After**
 
@@ -89,7 +89,7 @@ tailwind.config.js               - Added fluid spacing utilities
 ### **Guidelines Updated**
 - [x] designs/coding-guidelines.md - {Specific updates}
 - [x] .cursor/rules/design-workflow.mdc - {Specific updates}
-- [x] designs/design-review-agent-updated.md - {Specific updates}
+- [x] designs/design-review-agent.md - {Specific updates}
 
 ### **New Patterns Added**
 {New patterns documented for future use}

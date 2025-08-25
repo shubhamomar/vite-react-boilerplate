@@ -1,380 +1,446 @@
-
-# Coding Guidelines (Web App — React + Vite + Tailwind + shadcn/ui)
-_Version: 1.2.1 — Updated: 2025-08-22_
-
-> Hard rules for building modern, accessible, and fast UIs that match our tokens and principles. No magic numbers. No “looks fine on my screen.”
-
-## 0) Sources of truth
-- **Design tokens** (authoritative): `designs/design-updated.json`
-- **Principles**: `designs/design-principles-updated.md`
-- **Rules**: `.cursor/rules/design-review-auto.mdc`, `.cursor/rules/design-workflow.mdc`
-
----
-
-## 1) Theming & tokens (light/dark/high-contrast)
-- **Never hardcode** colors, radii, spacing. Map tokens → CSS variables.
-- Load tokens at app start and set theme on `<html data-theme="light|dark|hc">`.
-- Respect user prefs:
-  - `@media (prefers-contrast: more)` → switch to high-contrast `m3.colorRoles` and stronger outlines.
-  - `@media (prefers-reduced-motion: reduce)` → disable non-essential animations. :contentReference[oaicite:0]{index=0}
-
-**Example (token → CSS variables)**
-```ts
-// theme.ts
-import tokens from '@/designs/design-updated.json';
-
-export function applyTheme(theme: 'light'|'dark') {
-  const role = tokens.m3.colorRoles[theme];
-  const root = document.documentElement;
-  Object.entries(role).forEach(([k,v]) => root.style.setProperty(`--m3-${k}`, String(v)));
-  root.dataset.theme = theme;
-}
-
-```
-
-```css
-/* globals.css */
-:root {
-  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
-}
-html[data-theme="dark"] {
-  color: var(--m3-onSurface); background: var(--m3-surface);
-}
-@media (prefers-contrast: more) {
-  :root { --focus-outline: 2px solid currentColor; }
-}
-
-```
-
----
-
-## 2) Container queries (mandatory for components)
-
-- Every component that changes layout **must** set `container-type: inline-size;` and use `@container` for its own breakpoints. Viewport media queries are for global shell only. Container queries are standardized and broadly supported. ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/container?utm_source=chatgpt.com), [Can I Use](https://caniuse.com/css-container-queries?utm_source=chatgpt.com))
-
-**Native CSS**
-
-```css
-.card { container-type: inline-size; }
-@container (min-width: 36rem) {
-  .card--stats { grid-template-columns: 1fr 1fr 1fr; }
-}
-
-```
-
-**Tailwind (official plugin)**
-
-```jsx
-// tailwind.config.js
-plugins: [require('@tailwindcss/container-queries')]
-
-```
-
-```tsx
-<div className="@container">
-  <div className="grid gap-4 @md:grid-cols-2 @xl:grid-cols-4">...</div>
-</div>
-
-```
-
-(Plugin and Tailwind support for container queries.) ([GitHub](https://github.com/tailwindlabs/tailwindcss-container-queries?utm_source=chatgpt.com), [Tailwind CSS](https://tailwindcss.com/blog/tailwindcss-v3-2?utm_source=chatgpt.com))
-
----
-
-## 3) Density modes
-
-- Two densities: **comfortable** and **compact** (from tokens).
-- Controls: 40/32px heights. Table rows: 44/36px. Set via `[data-density="comfortable|compact"]` on `<html>` and consume in CSS.
-
-```css
-:root { --control-h: 40px; --row-h: 44px; }
-html[data-density="compact"] { --control-h: 32px; --row-h: 36px; }
-.button, .input { inline-size: max-content; block-size: var(--control-h); }
-tr { block-size: var(--row-h); }
-
-```
-
----
-
-## 4) Typography
-
-- Base 16px, ratio 1.2; `Inter` for UI, `JetBrains Mono` for code.
-- **Numbers**: use tabular numerals for tables/metrics.
-
-```css
-.metrics, td.num { font-variant-numeric: tabular-nums; }
-
-```
-
-(MDN for `font-variant-numeric`.) ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant-numeric?utm_source=chatgpt.com))
-
----
-
-## 5) Accessibility (WCAG 2.2 deltas baked-in)
-
-- **Focus Appearance**: Always show a visible, high-contrast 2px focus indicator. Minimum contrast change per WCAG 2.2; test it. ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html?utm_source=chatgpt.com))
-- **Target Size (Minimum)**: Every actionable target ≥ **24×24 CSS px**, or meet the spacing exception. ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html?utm_source=chatgpt.com))
-- **Dragging Movements**: Every drag interaction must have a **non-drag** (click/keyboard) alternative unless dragging is essential. ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html?utm_source=chatgpt.com))
-- **Text contrast**: body text ≥ **4.5:1**. Axis/labels in charts also ≥ 4.5:1. ([W3C](https://www.w3.org/TR/WCAG21/?utm_source=chatgpt.com))
-
-**Code**
-
-```css
-:where(button, [role="button"], a[role="button"], input, select, textarea) {
-  min-inline-size: 24px; min-block-size: 24px;
-}
-:where(button, a, input, [tabindex]){:focus-visible{outline: 2px solid currentColor; outline-offset: 2px;}}
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
-
-```
-
-(Preferences media queries.) ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/%40media/prefers-reduced-motion?utm_source=chatgpt.com))
-
----
-
-## 6) Forms & inputs
-
-- Labels always visible; no color-only validation. Inline help above errors.
-- Hit-area respects 24×24 rule even for small icons (use padding/ghost hit-areas). ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html?utm_source=chatgpt.com))
-
----
-
-## 7) Navigation, Command Palette, Copilot
-
-- **Command Palette (required)**: `Mod+K` opens; fuzzy search; recent actions; keyboard-first. Use an accessible library (e.g., `cmdk` or `react-cmdk`) or implement with ARIA combobox. ([GitHub](https://github.com/pacocoursey/cmdk?utm_source=chatgpt.com), [cmdk.paco.me](https://cmdk.paco.me/?utm_source=chatgpt.com), [React Spectrum](https://react-spectrum.adobe.com/react-aria/examples/command-palette.html?utm_source=chatgpt.com))
-- **Copilot panel**: right-docked, **360–480px**, resizable; undo/redo visible; never acts without explicit user confirmation (align with Copilot UX principles). ([Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-cloud/dev/copilot/isv/ux-guidance?utm_source=chatgpt.com))
-
-**Command Palette (React + cmdk)**
-
-```tsx
-import { useEffect, useState } from 'react';
-import { Command } from 'cmdk';
-
-export function CommandPalette() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpen(v => !v); }
-    };
-    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
-  }, []);
-  if (!open) return null;
-  return (
-    <Command label="Command Menu" className="fixed left-1/2 top-24 -translate-x-1/2 w-[720px] max-h-[70vh] rounded-xl bg-[var(--m3-surfaceContainerHigh)] shadow-xl">
-      <Command.Input placeholder="Type a command…" />
-      <Command.List>
-        <Command.Empty>No results.</Command.Empty>
-        {/* map actions here */}
-      </Command.List>
-    </Command>
-  );
-}
-
-```
-
----
-
-## 8) Tables (data-heavy by default)
-
-- Sticky header; resizable columns; **numeric right-align**; virtualization for >1k rows.
-- Use tabular nums for consistency; keep row heights per density.
-- Use ARIA patterns only when native table semantics aren’t possible. (APG reference.) ([W3C](https://www.w3.org/WAI/ARIA/apg/?utm_source=chatgpt.com))
-
-**CSS**
-
-```css
-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-thead th { position: sticky; top: 0; background: var(--m3-surfaceContainer); z-index: 1; }
-td.num { text-align: right; font-variant-numeric: tabular-nums; }
-
-```
-
----
-
-## 9) Charts
-
-- Use the **categorical 12-color ramp** from tokens.
-- Axis/labels ≥ 4.5:1; don’t rely on color alone—add markers/patterns. (WCAG text contrast + a11y data-viz guidance.) ([W3C](https://www.w3.org/TR/WCAG21/?utm_source=chatgpt.com), [The A11Y Collective](https://www.a11y-collective.com/blog/accessible-charts/?utm_source=chatgpt.com))
-
----
-
-## 10) Effects & motion
-
-- Glass/blur opacity ≤ 0.12; blur ≤ 20px (never harm legibility).
-- Animation timings: 150–250ms micro; 250–400ms layout. Disable when `prefers-reduced-motion: reduce`. ([web.dev](https://web.dev/articles/prefers-reduced-motion?utm_source=chatgpt.com))
-
----
-
-## 11) Layout rules recap
-
-- **Reading width** max **65ch** for prose panes.
-- Use container queries for component responsiveness; viewport queries for the global shell only. (MDN + support tables.) ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries?utm_source=chatgpt.com), [Can I Use](https://caniuse.com/css-container-queries?utm_source=chatgpt.com))
-
----
-
-## 12) Linting & CI (what we auto-check)
-
-- **Tokens**: grep for hardcoded hex/radii/spacing; enforce CSS vars.
-- **Container queries**: require `container-type` on components with responsive variants; `@container` present.
-- **A11y (WCAG 2.2)**: Focus ring visible/contrasty; all targets ≥24×24 or spaced; drag alternatives present. (WCAG 2.2 list.) ([W3C](https://www.w3.org/TR/WCAG22/?utm_source=chatgpt.com))
-- **Prefs**: `prefers-contrast` and `prefers-reduced-motion` rules present.
-- **Palette**: `Mod+K` command palette opens and executes an action; copilot panel sized 360–480px.
-
----
-
-## 13) Playwright checks (essentials)
-
-> These run in .cursor/rules/design-review-auto.mdc via MCP.
->
-- **Focus**: tab through the first 10 interactive elements → compute ring contrast change (expect ≥3:1). ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html?utm_source=chatgpt.com))
-- **Target size**: query all actionable elements → bounding box ≥24×24 or spacing exception attribute. ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html?utm_source=chatgpt.com))
-- **Drag alt**: if `[data-draggable=true]` exists → test a sibling “Move/Resize” button that does the same thing. ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html?utm_source=chatgpt.com))
-- **Container queries**: resize component container (not viewport) → expect `@container` variants to flip. ([MDN Web Docs](https://developer.mozilla.org/en-US/blog/getting-started-with-css-container-queries/?utm_source=chatgpt.com))
-- **Prefs**: emulate reduced-motion and high-contrast → verify CSS takes effect. ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/%40media/prefers-reduced-motion?utm_source=chatgpt.com))
-- **Command Palette**: send `Mod+K` → type, execute, assert route/action. (`cmdk`/combobox pattern.) ([GitHub](https://github.com/pacocoursey/cmdk?utm_source=chatgpt.com))
-
----
-
-## 14) Tailwind specifics
-
-- Enable **container queries** plugin and **font-variant-numeric** utilities; use `@md:`, `@lg:` variants and `tabular-nums`. ([GitHub](https://github.com/tailwindlabs/tailwindcss-container-queries?utm_source=chatgpt.com), [Tailwind CSS](https://tailwindcss.com/docs/font-variant-numeric?utm_source=chatgpt.com))
-- Prefer utilities for spacing/radius but **values come from tokens** via CSS variables (e.g., `rounded-[var(--radius-md)]`).
-
----
-
-## 15) Don’ts (fail the review)
-
-- Hardcoded hex/radius/spacing outside tokens.
-- Hover-only affordances or color-only validation.
-- Viewport-only responsive components (no `@container`).
-- Missing non-drag alternatives.
-- No command palette for deep apps; copilot acting without explicit consent. ([Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-cloud/dev/copilot/isv/ux-guidance?utm_source=chatgpt.com))
-
----
-
-## Key Files & Tools (Agent Index)
-
-- **Design tokens**: `designs/design-updated.json` (authoritative source)
-- **Design principles**: `designs/design-principles-updated.md`
-- **LLM rules**: `.cursor/rules/design-review-auto.mdc`, `.cursor/rules/design-workflow.mdc`
-- **Component baseline**: shadcn/ui + Tailwind (with `@tailwindcss/container-queries`)
-- **Docs**: Context7 external reference system
-- **Test/Eval**: Playwright via MCP
-- **Agents known to consume these**: Cursor, Google Jules, Claude Code, Gimini CLI
-
-### Agent Notes
-
-- **Container queries are required**: set `container-type: inline-size;` on components and write `@container` rules. (MDN + Tailwind plugin.) ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/container-type?utm_source=chatgpt.com), [GitHub](https://github.com/tailwindlabs/tailwindcss-container-queries?utm_source=chatgpt.com))
-- **WCAG 2.2** checks must pass before merge: Focus Appearance, Target Size, Dragging Movements. ([W3C](https://www.w3.org/TR/WCAG22/?utm_source=chatgpt.com))
-- **Preferences**: implement `prefers-contrast` and `prefers-reduced-motion`. ([MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/CSS/%40media/prefers-contrast?utm_source=chatgpt.com))
-
----
-
-## 16) Playwright Configuration & Best Practices
-
-To ensure stable and reliable end-to-end tests, the following configurations in `playwright.config.ts` are mandatory. Deviations from this setup have been proven to cause otherwise avoidable test failures.
-
-### 16.1) `webServer` Block is Mandatory
-
-The `webServer` block **must** be enabled. This ensures that Playwright starts the Vite development server before any tests run.
-
--   **Why**: Running tests without a web server (e.g., against `file://` URLs) will cause `SecurityError` failures. The browser will deny access to critical APIs like `localStorage`, `sessionStorage`, and others that are restricted to a proper `http` origin.
-
-**Correct Configuration:**
+# Coding Guidelines & Best Practices
+
+## Overview
+This document contains comprehensive coding guidelines, error prevention strategies, and best practices learned from real-world development issues. **This is a living document** - every error resolution adds new guidelines to prevent future occurrences.
+
+## 🎯 Core Principles
+
+### 1. Test-First Development
+- **Always test with real browser interactions** using Playwright MCP
+- **Monitor console errors** during development and testing
+- **Test file uploads and user interactions** with actual data
+- **Validate across multiple viewport sizes** (320px to 2560px+)
+
+### 2. Evidence-Based Development
+- **Check console logs** before considering implementation complete
+- **Use MCP tools** for research and validation
+- **Document issues** and solutions for future reference
+- **Real data testing** over synthetic examples
+
+### 3. Full-Width Fluid Layouts (Critical for 2K+ Monitors)
+- **ALWAYS utilize full viewport width** - no arbitrary max-width constraints
+- **Progressive enhancement** for larger screens (1600px, 1920px, 2560px+)
+- **Adaptive content density** - more columns/content on wider screens
+- **Test on high-resolution displays** to ensure proper utilization
+
+### 4. Planning Documentation System
+- **ALWAYS create plan document** before implementation: `planned-tasks/plan-{task-name}.md`
+- **USER APPROVAL REQUIRED** - never proceed without explicit user confirmation
+- **DOCUMENT EVERYTHING** - planning decisions, implementation changes, lessons learned
+- **SCREENSHOT DOCUMENTATION** - capture before/after across all breakpoints
+- **POST-IMPLEMENTATION CHANGELOG** - create `ai-tasks/{task-name}/changelog.md`
+
+## 🛠️ React/TypeScript/Vite Specific Patterns
+
+### Component Development
 ```typescript
-// playwright.config.ts
-export default defineConfig({
-  // ...
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173', // Match your Vite port
-    reuseExistingServer: !process.env.CI,
-  },
-});
-```
+// ✅ Good: Proper TypeScript with error boundaries
+interface ComponentProps {
+  data: DataType[];
+  onError?: (error: Error) => void;
+}
 
-### 16.2) `baseURL` is Mandatory
+const Component: React.FC<ComponentProps> = ({ data, onError }) => {
+  const [error, setError] = useState<Error | null>(null);
 
-The `baseURL` property inside the `use` block **must** be set and must match the `webServer.url`.
-
--   **Why**: Test scripts should use `page.goto('/')` or `page.goto('/some-path')` for navigation. This relies on `baseURL` being set. If it is not set, calls to `page.goto(baseURL)` will result in a `Cannot navigate to invalid URL` error.
-
-**Correct Configuration:**
-```typescript
-// playwright.config.ts
-export default defineConfig({
-  // ...
-  use: {
-    baseURL: 'http://localhost:5173', // Must match webServer.url
-    // ...
-  },
-});
-```
-
-### 16.3) Safely Clearing `localStorage` in Tests
-
-To reliably clear `localStorage` before a test, first navigate to the `baseURL` to establish the correct origin context, then perform the clear operation.
-
-**Correct Pattern:**
-```typescript
-// e2e/some.spec.ts
-test.beforeEach(async ({ page, baseURL }) => {
-  await page.goto(baseURL || '/'); // Establishes origin
-  await page.evaluate(() => localStorage.clear()); // Now this is safe
-  await page.goto('/page-to-test'); // Proceed with test
-});
-
-### 16.4) Zustand Store DOM Synchronization
-
-When using `zustand` with `persist` middleware for theme/density settings, there's a critical race condition between React hydration and DOM attribute application.
-
-**The Problem**: The store's initial state (from `persist`) is not immediately reflected in the DOM. Playwright tests that check for `data-theme` or `data-density` attributes will fail because these attributes are not set until after the component mounts and the store hydrates.
-
-**The Solution**: Use a combination of approaches:
-
-1. **Anti-flicker script in `index.html`** (already implemented)
-2. **`onRehydrateStorage` callback** in the persist middleware
-3. **Initial state application** before React mounts
-
-**Correct Pattern**:
-```typescript
-// store/settingsStore.ts
-const applyDomSettings = (theme: Theme, density: Density) => {
-  if (typeof window !== 'undefined') {
-    const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
-    root.setAttribute('data-density', density);
-  }
+  // Always handle errors gracefully
+  const handleOperation = useCallback(async () => {
+    try {
+      // operation
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      onError?.(error);
+    }
+  }, [onError]);
 };
 
-export const useSettingsStore = create<SettingsState>()(
-  persist(
-    (set, get) => ({
-      // ... store definition
-    }),
-    {
-      name: 'app-settings-storage',
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          applyDomSettings(state.theme, state.density);
-        }
-      },
-    },
-  ),
-);
-
-// Apply initial state immediately
-const initialState = useSettingsStore.getState();
-applyDomSettings(initialState.theme, initialState.density);
+// ❌ Bad: Missing error handling and types
+const Component = ({ data }) => {
+  // No error boundaries, no type safety
+};
 ```
 
-**Test Strategy**: Add a small delay or wait for the store to hydrate before checking DOM attributes:
+### Full-Width Layout Patterns
 ```typescript
-// In test files
-await page.waitForFunction(() => {
-  return document.documentElement.hasAttribute('data-theme');
+// ✅ Good: Full-width fluid layout that adapts to screen size
+const DashboardLayout: React.FC = ({ children }) => {
+  return (
+    <div className="min-h-screen w-full bg-m3-surface">
+      {/* Header: Full width with adaptive padding */}
+      <header className="w-full bg-m3-surfaceContainer">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          {/* Content adapts to screen size */}
+        </div>
+      </header>
+
+      {/* Main: Full width with responsive grid */}
+      <main className="w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          {/* Grid expands to use available space */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 qhd:grid-cols-6 gap-6">
+            {children}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// ❌ Bad: Fixed max-width container
+const BadLayout: React.FC = ({ children }) => {
+  return (
+    <div className="max-w-6xl mx-auto"> {/* Constrains to 1152px */}
+      {children}
+    </div>
+  );
+};
+```
+
+### State Management
+```typescript
+// ✅ Good: Zustand with proper TypeScript
+interface StoreState {
+  data: DataType[];
+  loading: boolean;
+  error: string | null;
+  actions: {
+    loadData: (file: File) => Promise<void>;
+    clearError: () => void;
+  };
+}
+
+// ❌ Bad: Untyped state without error handling
+const useStore = create(() => ({
+  data: [],
+  loadData: async (file) => {
+    // No error handling
+  }
+}));
+```
+
+### File Handling
+```typescript
+// ✅ Good: Proper file validation and error handling
+const validateFile = (file: File): { valid: boolean; error?: string } => {
+  if (!file) return { valid: false, error: 'No file provided' };
+  if (file.size > 500 * 1024 * 1024) return { valid: false, error: 'File too large' };
+  if (!['text/csv', 'text/plain'].includes(file.type)) {
+    return { valid: false, error: 'Invalid file type' };
+  }
+  return { valid: true };
+};
+
+// ❌ Bad: No validation
+const handleFile = (file: File) => {
+  // Direct processing without validation
+};
+```
+
+## 📚 Third-Party Library Integration Best Practices
+
+### AG Grid Integration (Learned: 2025-01-21)
+
+#### Module Registration
+```typescript
+// ✅ Good: Use AllCommunityModule for simplicity
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+// ❌ Bad: Individual modules (can cause missing feature errors)
+import { ClientSideRowModelModule } from 'ag-grid-community';
+ModuleRegistry.registerModules([ClientSideRowModelModule]); // Missing filtering, sorting
+```
+
+#### Theming Configuration
+```typescript
+// ✅ Good: Consistent theming approach
+<AgGridReact
+  theme="legacy"  // Use CSS-based theming
+  // ... other props
+/>
+
+// Or remove CSS imports and use new theming API
+// But never mix both approaches
+
+// ❌ Bad: Mixed theming (causes Error #239)
+// Having both ag-grid.css AND theme prop without "legacy"
+```
+
+#### Modern API Usage (v32.2+)
+```typescript
+// ✅ Good: Modern AG Grid patterns
+const gridConfig = {
+  rowSelection: {
+    mode: 'multiRow',
+    enableClickSelection: false,
+  },
+  // cellSelection requires Enterprise license
+  // Use basic community features only
+};
+
+// ❌ Bad: Deprecated patterns
+const gridConfig = {
+  rowSelection: 'multiple', // Deprecated
+  suppressRowClickSelection: true, // Deprecated
+  enableRangeSelection: true, // Enterprise only
+};
+```
+
+### Papa Parse + Web Workers (Learned: 2025-01-21)
+
+#### Worker Configuration
+```typescript
+// ✅ Good: Proper worker setup
+const papaConfig: Papa.ParseConfig = {
+  header: false,
+  skipEmptyLines: true,
+  delimiter: '',
+  complete: handleComplete,
+  error: handleError,
+  worker: false, // Don't nest workers
+  download: false, // We have the file
+};
+
+// ❌ Bad: Nested workers or missing error handling
+const papaConfig = {
+  // Missing error handler
+  worker: true, // Nested worker in worker
+};
+```
+
+#### File Processing
+```typescript
+// ✅ Good: Robust file processing
+function handleComplete(results: Papa.ParseResult<string[]>): void {
+  console.log('Parse complete:', {
+    totalRows: results.data?.length || 0,
+    hasErrors: (results.errors?.length || 0) > 0,
+    firstRow: results.data?.[0],
+  });
+
+  // Process errors into warnings
+  if (results.errors?.length) {
+    for (const error of results.errors) {
+      // Handle parsing errors gracefully
+    }
+  }
+}
+
+// ❌ Bad: Silent failures
+function handleComplete(results) {
+  // No logging, no error handling
+}
+```
+
+## 🧪 Testing Protocols
+
+### Browser Testing with Playwright MCP
+
+#### File Upload Testing
+```typescript
+// ✅ Required: Test file uploads with real files
+await page.click('[data-testid="file-upload"]');
+await page.setInputFiles('input[type="file"]', '/path/to/test/file.csv');
+
+// Verify upload success
+await page.waitForSelector('[data-testid="upload-success"]');
+
+// Check console for errors
+const consoleMessages = await page.evaluate(() => console.getMessages());
+const errors = consoleMessages.filter(msg => msg.type === 'error');
+expect(errors).toHaveLength(0);
+```
+
+#### Console Monitoring
+```typescript
+// ✅ Required: Monitor console during testing
+const consoleErrors = [];
+page.on('console', msg => {
+  if (msg.type() === 'error') {
+    consoleErrors.push(msg.text());
+  }
 });
+
+// After interactions, verify clean console
+expect(consoleErrors).toHaveLength(0);
 ```
+
+#### Responsive Testing (Updated: 2025-01-21)
+```typescript
+// ✅ Required: Test critical breakpoints including high-resolution displays
+const breakpoints = [320, 375, 768, 1024, 1440, 1600, 1920, 2560, 3840];
+
+for (const width of breakpoints) {
+  await page.setViewportSize({ width, height: 900 });
+  await page.screenshot({ path: `test-${width}px.png` });
+
+  // Verify no horizontal scroll at 320px
+  if (width === 320) {
+    const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.body.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  }
+
+  // Verify full-width utilization on large screens
+  if (width >= 1600) {
+    const containerWidth = await page.evaluate(() => {
+      const main = document.querySelector('main');
+      return main ? getComputedStyle(main).width : '0px';
+    });
+    // Should not be constrained by arbitrary max-width
+    expect(containerWidth).not.toBe('1200px');
+    expect(containerWidth).not.toBe('1152px'); // max-w-6xl
+  }
+}
 ```
+
+## ⚠️ Common Error Patterns & Solutions
+
+### Library Module Errors
+**Pattern**: "Module not registered" or "Feature not available"
+**Solution**:
+- Use comprehensive module imports (e.g., `AllCommunityModule`)
+- Check Community vs Enterprise feature requirements
+- Verify correct module registration syntax
+
+### Theming Conflicts
+**Pattern**: Mixed theming systems causing visual issues
+**Solution**:
+- Choose one theming approach consistently
+- Use `theme="legacy"` for CSS-based themes
+- Remove conflicting CSS imports
+
+### Worker Configuration Issues
+**Pattern**: Nested workers or silent failures
+**Solution**:
+- Set `worker: false` in libraries when already in worker context
+- Always include error handlers
+- Add comprehensive logging for debugging
+
+### Type Safety Issues
+**Pattern**: Runtime errors from missing type definitions
+**Solution**:
+- Define proper interfaces for all data structures
+- Use strict TypeScript configuration
+- Add runtime validation for external data
+
+### Layout Constraint Issues (Added: 2025-01-21)
+**Pattern**: Layouts not utilizing full screen width on large displays
+**Solution**:
+- Remove arbitrary `max-width` constraints
+- Use percentage-based or viewport-relative units
+- Implement progressive enhancement for larger screens
+- Test on high-resolution displays (2K, 4K)
+
+## 🔄 Continuous Improvement Process
+
+### After Every Error Resolution:
+1. **Document the issue** in this file
+2. **Add prevention guidelines** with code examples
+3. **Update testing protocols** if needed
+4. **Include in design review checklist**
+
+### Monthly Review:
+- Analyze recurring patterns
+- Update guidelines based on new learnings
+- Share insights with team
+- Refine testing automation
+
+## 📋 Pre-Deployment Checklist
+
+### Planning & Documentation
+- [ ] **Plan document created** and user-approved (planned-tasks/plan-{task-name}.md)
+- [ ] **Implementation follows approved plan** with documented deviations
+- [ ] **Screenshots captured** for before/after comparison
+- [ ] **Changelog created** with complete change summary (ai-tasks/{task-name}/changelog.md)
+
+### Code Quality
+- [ ] TypeScript strict mode enabled
+- [ ] All components have proper error boundaries
+- [ ] Console is clean (no errors/warnings)
+- [ ] File upload flows tested with real files
+
+### Library Integration
+- [ ] Third-party libraries properly configured
+- [ ] Module registrations complete
+- [ ] Version compatibility verified
+- [ ] Feature edition requirements checked
+
+### Browser Testing
+- [ ] Playwright MCP tests passing
+- [ ] File interactions tested
+- [ ] Console monitoring active
+- [ ] Responsive behavior verified
+- [ ] **Full-width layout tested on 2K+ displays**
+
+### Performance
+- [ ] Large dataset handling tested
+- [ ] Worker configuration optimal
+- [ ] Memory usage acceptable
+- [ ] Loading states implemented
+
+---
+
+## 📚 Learning Log
+
+### 2025-01-21: Full-Width Layout Requirements (CRITICAL UPDATE)
+**Issues Identified**:
+- Layouts constrained on high-resolution displays (2K, 4K) showing significant wasted space
+- Fixed max-width containers (max-w-7xl, max-width: 1200px) limiting screen utilization
+- Static grid columns not adapting to available screen real estate
+- Missing progressive enhancement for larger screens (1600px+)
+- User reported: 2560x1440 display showing constrained layouts with unused horizontal space
+
+**Root Cause**:
+- `designs/tokens.json` had `maxWidth: "1200px"` constraint
+- Pages using `max-w-7xl mx-auto` pattern constraining to 1280px
+- Grid systems stopping at 3-4 columns regardless of screen width
+
+**Guidelines Added**:
+- Full-width layout requirements and patterns with fluid containers
+- High-resolution display testing protocols (320px to 3840px)
+- Progressive enhancement strategies (5-8 columns on 2K+ displays)
+- Container width validation in testing with Playwright MCP
+- Fluid padding system using `clamp()` and viewport-relative units
+- Elimination of all arbitrary max-width constraints
+
+### 2025-01-21: AG Grid & Papa Parse Integration
+**Issues Fixed**:
+- AG Grid module registration errors (#200, #239)
+- Deprecated API warnings (rowSelection patterns)
+- Papa Parse worker configuration issues
+- Console error monitoring gaps
+
+**Guidelines Added**:
+- Comprehensive AG Grid setup patterns
+- Worker configuration best practices
+- Enhanced browser testing protocols
+- File upload testing requirements
+
+### 2025-01-21: Planning Documentation System Implementation
+**Issues Addressed**:
+- Need for systematic planning and user approval workflow
+- Lack of comprehensive change documentation
+- Difficulty in reviewing design decisions and implementation history
+- Cluttered git history with planning artifacts
+
+**Solution Implemented**:
+- Created `planned-tasks/` folder system (excluded from git via .gitignore)
+- Implemented mandatory `plan-{task-name}.md` creation with user approval requirement
+- Added post-implementation `ai-tasks/{task-name}/changelog.md` documentation system
+- Established screenshot capture and visual documentation protocols
+- Integrated planning workflow into all design rule files
+
+**Guidelines Added**:
+- Mandatory user approval process before any implementation
+- Comprehensive documentation templates for plans and changelogs
+- Screenshot documentation requirements across all breakpoints
+- Knowledge transfer protocols for team learning
+- Clean git history maintenance while preserving human-readable documentation
+
+**Next Update**: [Date] - [New learnings from next error resolution]
+
+---
+
+*This document evolves with every challenge we overcome. Each error makes us stronger and our codebase more robust.*
