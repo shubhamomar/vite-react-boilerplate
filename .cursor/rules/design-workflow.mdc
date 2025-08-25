@@ -1,0 +1,30 @@
+---
+name: design-workflow
+version: 1.0
+description: "Guides the AI agent through the implementation of a single, approved development phase."
+---
+
+# AI Agent Design & Implementation Workflow
+
+## 0) Mandate
+
+This rule is activated by the `main-orchestrator.mdc` after a plan has been approved by the user. Its sole purpose is to guide the agent through the **implementation** of one phase of the development plan.
+
+## 1) Core Principles
+
+- **Adhere to the Plan**: Only implement what is specified for the current phase in `plan-{task-name}.md`.
+- **Tokens are Law**: All visual styles (colors, spacing, radii, etc.) **must** be derived from `designs/tokens.json`. No hardcoded values are permitted.
+- **Guidelines are Gospel**: All code structure, component patterns, and accessibility considerations **must** follow `designs/coding-guidelines.md`.
+
+## 2) Implementation Steps
+
+1.  **Announce Phase**: State which phase from the plan you are beginning to implement.
+2.  **Code Generation**:
+    - Write or modify the code as required.
+    - Continuously reference the three sources of truth:
+        1.  The approved plan (`/planned-tasks/plan-{task-name}.md`)
+        2.  The design tokens (`/designs/tokens.json`)
+        3.  The coding guidelines (`/designs/coding-guidelines.md`)
+3.  **Self-Correction**:
+    - After generating code, perform a quick self-review. Did you accidentally hardcode a color? Does the component use container queries as required? Fix any obvious deviations before proceeding.
+4.  **Completion**: Once the implementation for the phase is complete, return control to the `main-orchestrator.mdc`, which will then trigger the `design-reviewer.mdc` for testing.

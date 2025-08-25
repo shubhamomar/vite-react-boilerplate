@@ -72,6 +72,15 @@ next-env.d.ts
 *.jar
 Thumbs.db
 
+# Planning and review documentation (human review only, not committed)
+/plan-changes/
+/planned-tasks/
+.playwright-mcp/
+e2e-artifacts/
+
+# non-project files like PRD documents, sample data, and examples intended for ai usage
+/docs/
+
 # Applications
 *.app
 *.exe

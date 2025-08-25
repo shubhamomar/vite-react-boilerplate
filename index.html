@@ -6,6 +6,25 @@
     <title>Vite React Boilerplate</title>
   </head>
   <body>
+    <script>
+      (function() {
+        try {
+          const storedSettings = localStorage.getItem('app-settings-storage');
+          if (storedSettings) {
+            const { state } = JSON.parse(storedSettings);
+            const root = document.documentElement;
+            if (state.theme) {
+              root.setAttribute('data-theme', state.theme);
+            }
+            if (state.density) {
+              root.setAttribute('data-density', state.density);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to apply settings from localStorage', e);
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

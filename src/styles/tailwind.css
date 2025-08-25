@@ -1,3 +1,53 @@
+/* AG Grid styles - must come first */
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-material.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom AG Grid theming */
+.ag-theme-material {
+  --ag-header-background-color: #f8fafc;
+  --ag-header-foreground-color: #1e293b;
+  --ag-border-color: #e2e8f0;
+  --ag-row-hover-color: #f1f5f9;
+  --ag-selected-row-background-color: #dbeafe;
+  --ag-cell-horizontal-border: 1px solid #e2e8f0;
+  --ag-row-border-color: #e2e8f0;
+  --ag-font-family: 'Inter', system-ui, sans-serif;
+  --ag-font-size: 14px;
+}
+
+.ag-theme-compact .ag-row {
+  min-height: 28px !important;
+}
+
+.ag-theme-cozy .ag-row {
+  min-height: 36px !important;
+}
+
+.ag-theme-comfortable .ag-row {
+  min-height: 44px !important;
+}
+
+.ag-cell-editable {
+  position: relative;
+}
+
+.ag-cell-editable:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Scrollbar styling for better appearance */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-gray-300 {
+  scrollbar-color: #d1d5db transparent;
+}
+
+.scrollbar-track-transparent {
+  scrollbar-track-color: transparent;
+}
