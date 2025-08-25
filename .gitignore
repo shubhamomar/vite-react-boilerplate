@@ -55,7 +55,6 @@ storybook-static
 
 # tests
 /coverage/
-/test-results/
 /playwright-report/
 /playwright/.cache/
 TEST*.xml
@@ -73,12 +72,14 @@ next-env.d.ts
 Thumbs.db
 
 # Planning and review documentation (human review only, not committed)
-/plan-changes/
 /planned-tasks/
+/ai-tasks/
 .playwright-mcp/
 e2e-artifacts/
 
 # non-project files like PRD documents, sample data, and examples intended for ai usage
+/docs/prd-files/
+/docs/sample-files/
 
 # Applications
 *.app
